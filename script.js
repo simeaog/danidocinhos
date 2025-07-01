@@ -154,6 +154,30 @@ function enviarParaWhatsapp() {
     mensagem += `%0A${encodeURIComponent(enderecoTexto)}`;
   }
 
+  // Montando o objeto com os dados do pedido
+  const dadosPedido = {
+    nome,
+    recebimento,
+    cpf: recebimento === "entrega" ? document.getElementById('cpf').value : "",
+    rua: recebimento === "entrega" ? document.getElementById('rua').value : "",
+    numero: recebimento === "entrega" ? document.getElementById('numero').value : "",
+    bairro: recebimento === "entrega" ? document.getElementById('bairro').value : "",
+    referencia: recebimento === "entrega" ? document.getElementById('referencia').value : "",
+    pedido: montarResumoPedido(), // função auxiliar para montar o texto do pedido/resumo
+    pagamento: formaPagamento,
+    total: total // valor do pedido
+  };
+
+  // --------------- ENVIANDO PARA O GOOGLE APPS SCRIPT ---------------
+  fetch('SUA_URL_DO_APPS_SCRIPT_AQUI', {
+    method: 'POST',
+    mode: 'no-cors', // Para evitar bloqueio de CORS
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(dadosPedido)
+  });
+
   // Abre WhatsApp
   const url = `https://wa.me/5542999589689?text=${mensagem}`;
   window.open(url, '_blank');
