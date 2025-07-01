@@ -1,0 +1,280 @@
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f8f0e3;
+  color: #5c3a21;
+  margin: 10px;
+  padding: 0;
+}
+
+.container {
+  max-width: 360px;
+  margin: 0 auto;
+  background-color: #fff7f0;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.2);
+  margin-top: 20px;
+  border: 2px solid #c69c6d;
+}
+
+h2 {
+  text-align: center;
+  color: #7b4f2c;
+  font-weight: bold;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+}
+
+input[type="text"], input[type="number"] {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #d3c3b3;
+  border-radius: 5px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+input[type="number"] {
+  width: 60px;
+  text-align: right;
+}
+
+.docinho {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #e0d3c2;
+  padding-bottom: 10px;
+  justify-content: space-between;
+}
+
+.docinho img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.docinho span {
+  min-width: 80px;
+  font-weight: bold;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+}
+
+.controls button {
+  padding: 6px 10px;
+  font-size: 16px;
+  background-color: #d3c3b3;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.controls button:hover {
+  background-color: #c0a992;
+}
+
+.resumo {
+  background-color: #fff0dc;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 20px;
+  border: 2px solid #c69c6d;
+  margin-bottom: 10px;
+}
+
+.resumo p {
+  margin: 5px 0;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.aviso-embalagem {
+  text-align: center;
+  font-size: 14px;
+  color: #b94a48;
+  margin-bottom: 20px;
+  display: none;
+}
+.aviso-embreve{
+  text-align: center;
+  font-size: 14px;
+  color: #b94a48;
+  margin-bottom: 20px;
+}
+.imagem-capa {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.imagem-frete {
+  width: 100%;
+  margin: 20px 0;
+  border-radius: 8px;
+}
+
+.tabs {
+  display: flex;
+  justify-content: space-around;
+  margin: 20px 0 10px;
+}
+
+.tabs button {
+  padding: 10px;
+  background-color: #d3c3b3;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.tabs button.active {
+  background-color: #c69c6d;
+  font-weight: bold;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  background-color: #7b4f2c;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 18px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  background-color: #5c3a21;
+}
+.pagamento {
+  margin-top: 20px;
+}
+
+.pix-opcao {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.pix-detalhes {
+  display: none;
+  background-color: #fff0dc;
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 10px;
+  border: 1px dashed #c69c6d;
+}
+
+.pix-info-line {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.pix-info-line img {
+  height: 20px;
+  cursor: pointer;
+}
+
+#chave_pix {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.feedback {
+  text-align: center;
+  margin: 10px 0;
+  color: green;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* RECEBIMENTO TABS */
+.recebimento-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  justify-content: center;
+}
+
+.recebimento-btn {
+  flex: 1;
+  padding: 10px 0;
+  background-color: #d3c3b3;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  color: #7b4f2c;
+  font-weight: bold;
+  transition: background 0.2s, color 0.2s;
+  outline: none;
+}
+
+.recebimento-btn.active,
+.recebimento-btn:focus-visible {
+  background-color: #c69c6d;
+  color: #fff;
+  box-shadow: 0 0 0 2px #c69c6d55;
+}
+
+/* Campos de endereço alinhados */
+.campos-entrega .form-group {
+  margin-bottom: 10px;
+}
+
+/* Responsivo */
+@media (max-width: 500px) {
+  .container {
+    max-width: 98vw;
+    padding: 10px;
+  }
+  .imagem-capa {
+    height: 120px;
+  }
+  .docinho img {
+    width: 32px;
+    height: 32px;
+  }
+  button, .tabs button, .recebimento-btn {
+    font-size: 16px;
+    padding: 10px;
+  }
+  .resumo, .pix-detalhes, #bloco_pix {
+    padding: 8px;
+    font-size: 14px;
+  }
+}
