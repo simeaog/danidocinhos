@@ -140,7 +140,7 @@ function enviarParaWhatsapp() {
   ids.forEach(({ id, nome }) => {
     const qtd = parseInt(document.getElementById(id).value) || 0;
     if (qtd > 0) {
-      mensagem += `${nome.padEnd(13)}|  ${String(qtd).padStart(2, '0')}  |  R$ ${(qtd * precoUnitario).toFixed(2)}%0A`;
+      mensagem += `${nome.padEnd(12)}| ${String(qtd).padStart(2, '0')} | R$ ${(qtd * precoUnitario).toFixed(2)}%0A`;
     }
   });
 
