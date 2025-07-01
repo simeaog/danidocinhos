@@ -169,7 +169,7 @@ function enviarParaWhatsapp() {
   };
 
   // --------------- ENVIANDO PARA O GOOGLE APPS SCRIPT ---------------
-  fetch('SUA_URL_DO_APPS_SCRIPT_AQUI', {
+  fetch(https://script.google.com/macros/s/AKfycbwuJC5C5i0hDXxAEwmTJpgzklX8i6_svYo1GAEGvAy_UJm41l86K5iZVAXaf0jJTuYknA/exec, {
     method: 'POST',
     mode: 'no-cors', // Para evitar bloqueio de CORS
     headers: {
