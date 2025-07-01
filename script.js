@@ -188,6 +188,29 @@ function enviarParaWhatsapp() {
   setTimeout(() => { feedback.textContent = ""; }, 4000);
 }
 
+function montarResumoPedido() {
+  const ids = [
+    { id: 'qtd_brigadeiro', nome: 'Brigadeiro' },
+    { id: 'qtd_beijinho', nome: 'Beijinho' },
+    { id: 'qtd_dois_amores', nome: 'Dois Amores' },
+    { id: 'qtd_biscoito', nome: 'Biscoito Amantegado' },
+    { id: 'qtd_cafe', nome: 'Café' },
+    { id: 'qtd_capuccino', nome: 'Capuccino' },
+    { id: 'qtd_agua', nome: 'Água' }
+  ];
+  const precoUnitario = 2;
+  let texto = '';
+  ids.forEach(({ id, nome }) => {
+    const qtd = parseInt(document.getElementById(id).value) || 0;
+    if (qtd > 0) {
+      texto += `${nome}: ${qtd} (R$ ${(qtd * precoUnitario).toFixed(2)}) | `;
+    }
+  });
+  if (document.getElementById('linha_embalagem').innerText) {
+    texto += 'Embalagem extra: R$ 1,00 | ';
+  }
+  return texto;
+}
 function calcularTotal() {
   const brigadeiro = parseInt(document.getElementById('qtd_brigadeiro').value) || 0;
   const beijinho = parseInt(document.getElementById('qtd_beijinho').value) || 0;
