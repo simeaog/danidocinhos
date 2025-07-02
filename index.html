@@ -5,15 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pedido de Docinhos</title>
   <link rel="stylesheet" href="style.css">
-  <!-- Favicon padrão -->
   <link rel="icon" type="image/png" href="https://i.ibb.co/rGCf4jZN/l-OYO6p-P-Imgur.jpg">
-  <!-- Ícone para tela inicial e PWA -->
   <link rel="apple-touch-icon" href="https://i.ibb.co/rGCf4jZN/l-OYO6p-P-Imgur.jpg">
   <meta name="theme-color" content="#7b4f2c">
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
   <div class="container">
+    <!-- Banner para adicionar à tela inicial -->
     <div id="add-to-home-banner" style="display:none; cursor:pointer;">
       <div class="add-to-home-inner">
         <img src="https://i.ibb.co/rGCf4jZN/l-OYO6p-P-Imgur.jpg" alt="Brigadeiro" style="height:36px;vertical-align:middle;margin-right:10px;">
@@ -32,13 +31,12 @@
       <label for="nome">Nome:</label>
       <input type="text" id="nome" placeholder="Seu nome" required>
     </div>
-
+    <!-- Tabs de produtos -->
     <div class="tabs">
       <button class="tab-btn active" onclick="mostrarAba('docinhos')" tabindex="0">Docinhos</button>
       <button class="tab-btn" onclick="mostrarAba('biscoitos')" tabindex="0">Biscoitos</button>
       <button class="tab-btn" onclick="mostrarAba('bebidas')" tabindex="0">Bebidas</button>
     </div>
-
     <div id="docinhos" class="tab-content active">
       <div class="docinho">
         <img src="https://i.ibb.co/rGCf4jZN/l-OYO6p-P-Imgur.jpg" alt="Brigadeiro">
@@ -110,7 +108,7 @@
         </div>
       </div>
     </div>
-        <!-- NOVO: Forma de recebimento -->
+    <!-- Forma de recebimento -->
     <div class="form-group">
       <label><strong>Forma de recebimento:</strong></label>
       <div class="recebimento-tabs" id="recebimento-tabs">
@@ -119,12 +117,11 @@
       </div>
       <input type="hidden" id="recebimento" value="retirada">
     </div>
-
-    <!-- NOVO: Campos de endereço e CPF -->
+    <!-- Campos de endereço e CPF -->
     <div id="campos-entrega" class="campos-entrega" style="display: none;">
       <div class="form-group">
         <label for="cpf">CPF:</label>
-        <input type="text" id="cpf" maxlength="14" placeholder="Apenas números" onblur="preencherEnderecoSalvo()" autocomplete="off">
+        <input type="text" id="cpf" maxlength="14" placeholder="Apenas números" autocomplete="off">
       </div>
       <div class="form-group">
         <label for="rua">Rua:</label>
@@ -143,43 +140,29 @@
         <input type="text" id="referencia" placeholder="Ponto de referência">
       </div>
     </div>
-    
-     <!-- <img src="https://i.ibb.co/08dq1xQ/ail1hjw-Imgur.jpg" alt="Informações de Frete" class="imagem-frete"> -->
-    
+    <!-- Resumo -->
     <div class="resumo">
       <p><strong>Resumo do pedido:</strong></p>
       <p id="linha_brigadeiro"></p>
       <p id="linha_beijinho"></p>
       <p id="linha_dois_amores"></p>
-      <p id="linha_biscoito_amantegado"></p>
-      <p id="linha_cafe"></p>
-      <p id="linha_capuccino"></p>
-      <p id="linha_agua"></p>
       <p id="linha_embalagem"></p>
       <p id="totalPedido"><strong>Total: R$ 0,00</strong></p>
     </div>
     <div class="aviso-embalagem" id="aviso_embalagem"></div>
+    <!-- Forma de pagamento -->
     <div class="form-group">
-    <label><strong>Forma de Pagamento:</strong></label>
-    <div id="tabs-pagamento" style="display:flex;gap:10px;margin-bottom:10px;">
-      <button type="button" class="tab-btn active" data-pagamento="entrega" onclick="selecionarPagamento('entrega')">Pagar na entrega</button>
-      <button type="button" class="tab-btn" data-pagamento="pix" onclick="selecionarPagamento('pix')">PIX</button>
-    </div>
-    
-    <!-- Área do PIX: só aparece se selecionado -->
-    <div id="area-pix" style="display:none;align-items:center;gap:10px;margin-bottom:10px;">
-      <img src="https://logodownload.org/wp-content/uploads/2021/02/pix-icone-256.png" alt="PIX" style="height:40px;">
-      <input type="text" id="pix-chave" value="093.095.589-70" readonly style="width:170px;font-weight:bold;text-align:center;margin-right:8px;">
-      <button type="button" onclick="copiarPix()">Copiar</button>
-      <span id="pix-msg" style="color:green;display:none;">Copiado!</span>
-    </div>
-    </div>
-    <div id="bloco_pix" style="display: none; background-color: #fff0dc; padding: 15px; border-radius: 8px; border: 2px dashed #c69c6d; margin-bottom: 15px;">
-      <img src="https://i.ibb.co/LzDZgw0F/DQzmf8-Z-Imgur.png" alt="QR Code PIX" style="width: 100%; max-width: 200px; display: block; margin: 0 auto;">
-      <div class="pix-info-line">
-        <img src="https://i.ibb.co/yBmmvBZm/VYPSegd-Imgur.png" alt="Ícone chave" style="height: 20px;">
-        <strong id="chave_pix">ce48e2ee-ef1d-4d4f-854d-ead711cdade3</strong>
-        <img src="https://i.ibb.co/VYr08G3S/WPru-QK0-Imgur.png" alt="Copiar" onclick="copiarChavePix()">
+      <label><strong>Forma de Pagamento:</strong></label>
+      <div id="tabs-pagamento" style="display:flex;gap:10px;margin-bottom:10px;">
+        <button type="button" class="tab-btn active" data-pagamento="entrega" onclick="selecionarPagamento('entrega')">Pagar na entrega</button>
+        <button type="button" class="tab-btn" data-pagamento="pix" onclick="selecionarPagamento('pix')">PIX</button>
+      </div>
+      <!-- PIX: só aparece se selecionado -->
+      <div id="area-pix" style="display:none;align-items:center;gap:10px;margin-bottom:10px;">
+        <img src="https://logodownload.org/wp-content/uploads/2021/02/pix-icone-256.png" alt="PIX" style="height:40px;">
+        <input type="text" id="pix-chave" value="093.095.589-70" readonly style="width:170px;font-weight:bold;text-align:center;margin-right:8px;">
+        <button type="button" onclick="copiarPix()">Copiar</button>
+        <span id="pix-msg" style="color:green;display:none;">Copiado!</span>
       </div>
     </div>
     <div>
