@@ -176,7 +176,7 @@ function enviarParaWhatsapp() {
   });
 
   if (document.getElementById('linha_embalagem').innerText) {
-    mensagem += `Embalagem    |  01  |  R$ 1.00%0A`;
+    mensagem += `Embalagem   | 01 | R$ 1.00%0A`;
   }
 
   mensagem += `%0A\u0060\u0060\u0060${total}%0A%0AForma de Pagamento: ${formaPagamento}`;
