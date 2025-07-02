@@ -302,3 +302,31 @@ document.addEventListener('DOMContentLoaded', function() {
     localStorage.setItem('addToHomeDismissed', '1');
   };
 });
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js');
+}
+
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Aqui você pode mostrar o banner personalizado
+});
+
+// Função chamada ao clicar no banner/botão de adicionar
+function instalarPWA() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        // Usuário aceitou instalar
+      }
+      deferredPrompt = null;
+      document.getElementById('add-to-home-banner').style.display = 'none';
+      localStorage.setItem('addToHomeDismissed', '1');
+    });
+  }
+}
+
+document.getElementById('instalar-pwa').onclick = instalarPWA;
