@@ -3,19 +3,19 @@
   "short_name": "Docinhos",
   "icons": [
     {
-      "src": "https://i.ibb.co/rGCf4jZN/l-OYO6p-P-Imgur.jpg",
+      "src": "https://i.ibb.co/Y77CVcVt/1-cone-de-um-dois-amo.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "https://i.ibb.co/rGCf4jZN/l-OYO6p-P-Imgur.jpg",
+      "src": "https://i.ibb.co/VYMzwR9c/2-cone-de-um-dois-amo.png",
       "sizes": "512x512",
       "type": "image/png"
     }
   ],
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#fffbe9",
+  "background_color": "#f08b30",
   "theme_color": "#7b4f2c",
   "description": "Pedidos de Docinhos"
 }
