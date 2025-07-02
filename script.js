@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function enviarParaWhatsapp() {
   const nome = document.getElementById("nome").value.trim();
   const total = document.getElementById("totalPedido").innerText;
-  const formaPagamento = document.querySelector('input[name="pagamento"]:checked').value;
+  const formaPagamento = document.querySelector('#tabs-pagamento .tab-btn.active').dataset.pagamento;
   const recebimento = document.getElementById('recebimento').value;
   const feedback = document.getElementById('mensagem-feedback');
 
