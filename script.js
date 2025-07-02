@@ -72,6 +72,37 @@ function salvarEnderecoPorCPF() {
   localStorage.setItem('endereco_' + cpf, JSON.stringify(endereco));
 }
 
+function isInStandaloneMode() {
+  return (window.matchMedia('(display-mode: standalone)').matches) || (window.navigator.standalone);
+}
+
+// Mostra banner após enviar o pedido, se não for standalone, não já foi mostrado, e está em mobile
+function mostrarBannerAddHome() {
+  if (isInStandaloneMode() || localStorage.getItem('addToHomeDismissed')) return;
+  if (!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) return;
+
+  // Instrução customizada conforme sistema
+  let texto = '';
+  if (/Android/i.test(navigator.userAgent)) {
+    texto = `No Chrome, toque no menu <b>⋮</b> e escolha <b>Adicionar à tela inicial</b>.`;
+  } else if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    texto = `No Safari, toque <b>Compartilhar</b> <img src="https://upload.wikimedia.org/wikipedia/commons/5/5f/Share_iOS_icon.png" style="height:18px;vertical-align:middle;"> e depois <b>Adicionar à Tela de Início</b>.`;
+  }
+  document.getElementById('add-to-home-instruction').innerHTML = texto;
+  document.getElementById('add-to-home-banner').style.display = 'block';
+}
+
+// Fecha e marca para não mostrar de novo
+document.addEventListener('DOMContentLoaded', function() {
+  const fechar = document.getElementById('fechar-banner');
+  if (fechar) {
+    fechar.onclick = function() {
+      document.getElementById('add-to-home-banner').style.display = 'none';
+      localStorage.setItem('addToHomeDismissed', '1');
+    };
+  }
+});
+
 function enviarParaWhatsapp() {
   const nome = document.getElementById("nome").value.trim();
   const total = document.getElementById("totalPedido").innerText;
@@ -178,6 +209,9 @@ function enviarParaWhatsapp() {
     body: JSON.stringify(dadosPedido)
   });
 
+      // Após tudo, sugira adicionar à tela inicial:
+  setTimeout(mostrarBannerAddHome, 1000);
+  
   // Abre WhatsApp
   const url = `https://wa.me/5542999589689?text=${mensagem}`;
   window.open(url, '_blank');
@@ -186,6 +220,7 @@ function enviarParaWhatsapp() {
   feedback.style.color = "green";
 
   setTimeout(() => { feedback.textContent = ""; }, 4000);
+  
 }
 
 function montarResumoPedido() {
