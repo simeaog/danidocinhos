@@ -307,7 +307,7 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('service-worker.js');
 }
 
-let deferredPrompt;
+// let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
@@ -328,7 +328,7 @@ function instalarPWA() {
     });
   }
 }
-// let deferredPrompt = null;
+ let deferredPrompt = null;
 
 // Captura o evento PWA
 window.addEventListener('beforeinstallprompt', (e) => {
