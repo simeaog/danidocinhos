@@ -312,3 +312,19 @@ button:hover {
   from { opacity: 0; transform: translateY(20px);}
   to { opacity: 1; transform: translateY(0);}
 }
+/* Tabs de pagamento */
+.tab-btn {
+  padding: 7px 18px;
+  border: 1px solid #c69c6d;
+  background: #fffbe9;
+  color: #7b4f2c;
+  font-weight: bold;
+  border-radius: 5px 5px 0 0;
+  cursor: pointer;
+  outline: none;
+  transition: background 0.2s;
+}
+.tab-btn.active, .tab-btn:focus {
+  background: #f5d6a2;
+  border-bottom: 2px solid #7b4f2c;
+}
