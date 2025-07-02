@@ -328,5 +328,75 @@ function instalarPWA() {
     });
   }
 }
+let deferredPrompt = null;
 
+// Captura o evento PWA
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Aqui você pode mostrar o banner
+});
+
+// Instala o PWA ao clicar no banner
+function instalarPWA() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choiceResult) => {
+      deferredPrompt = null;
+      document.getElementById('add-to-home-banner').style.display = 'none';
+      localStorage.setItem('addToHomeDismissed', '1');
+    });
+  }
+}
+
+// Evento para fechar o banner
+document.addEventListener('DOMContentLoaded', function() {
+  const banner = document.getElementById('add-to-home-banner');
+  const fechar = document.getElementById('fechar-banner');
+  if (banner) {
+    banner.onclick = function(e) {
+      // Só chama instalar se não for no botão de fechar
+      if (e.target.id !== 'fechar-banner') {
+        instalarPWA();
+      }
+    };
+  }
+  if (fechar) {
+    fechar.onclick = function(event) {
+      event.stopPropagation(); // Não dispara instalarPWA
+      document.getElementById('add-to-home-banner').style.display = 'none';
+      localStorage.setItem('addToHomeDismissed', '1');
+    };
+  }
+});
+// Tabs de pagamento
+function selecionarPagamento(tipo) {
+  document.querySelectorAll('#tabs-pagamento .tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-pagamento') === tipo);
+  });
+  document.getElementById('area-pix').style.display = (tipo === 'pix') ? 'flex' : 'none';
+  // Atualizar valor do pagamento selecionado (opcional)
+  document.querySelector('input[name="pagamento-valor"]')?.remove();
+  const input = document.createElement('input');
+  input.type = 'hidden';
+  input.name = 'pagamento';
+  input.value = tipo;
+  input.setAttribute('name', 'pagamento-valor');
+  document.getElementById('tabs-pagamento').appendChild(input);
+}
+
+// Copiar chave PIX
+function copiarPix() {
+  const input = document.getElementById('pix-chave');
+  navigator.clipboard.writeText(input.value).then(() => {
+    const msg = document.getElementById('pix-msg');
+    msg.style.display = 'inline';
+    setTimeout(() => { msg.style.display = 'none'; }, 1800);
+  });
+}
+
+// Se quiser já marcar "entrega" como padrão:
+document.addEventListener('DOMContentLoaded', function() {
+  selecionarPagamento('entrega');
+});
 document.getElementById('instalar-pwa').onclick = instalarPWA;
