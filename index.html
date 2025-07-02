@@ -14,11 +14,16 @@
 </head>
 <body>
   <div class="container">
-    <div id="add-to-home-banner" style="display:none;">
+    <div id="add-to-home-banner" style="display:none; cursor:pointer;">
       <div class="add-to-home-inner">
         <img src="https://i.ibb.co/rGCf4jZN/l-OYO6p-P-Imgur.jpg" alt="Brigadeiro" style="height:36px;vertical-align:middle;margin-right:10px;">
-        <span>Adicione este site à tela inicial para acesso rápido!</span>
-        <button id="fechar-banner" style="margin-left:12px;background:transparent;border:none;font-size:22px;vertical-align:middle;cursor:pointer;">&times;</button>
+        <span>
+          Adicione este site à tela inicial para acesso rápido!<br>
+          <small>
+            <span id="add-to-home-instruction"></span>
+          </small>
+        </span>
+        <button id="fechar-banner" style="margin-left:12px; background:transparent; border:none; font-size:22px; vertical-align:middle; cursor:pointer;">&times;</button>
       </div>
     </div>
     <img src="https://i.ibb.co/jPbF2YHK/s0-Jhzxj-Imgur.jpg" alt="Imagem de Capa" class="imagem-capa">
@@ -155,17 +160,19 @@
     </div>
     <div class="aviso-embalagem" id="aviso_embalagem"></div>
     <div class="form-group">
-      <label><strong>Forma de Pagamento:</strong></label>
-      <div style="display: flex; flex-direction: column; gap: 10px;">
-        <label style="display: flex; align-items: center; gap: 5px;">
-          <input type="radio" name="pagamento" value="entrega" checked onchange="mostrarPIX(false)">
-          Pagar na entrega
-        </label>
-        <label style="display: flex; align-items: center; gap: 5px;">
-          <input type="radio" name="pagamento" value="pix" onchange="mostrarPIX(true)">
-          PIX
-        </label>
-      </div>
+    <label><strong>Forma de Pagamento:</strong></label>
+    <div id="tabs-pagamento" style="display:flex;gap:10px;margin-bottom:10px;">
+      <button type="button" class="tab-btn active" data-pagamento="entrega" onclick="selecionarPagamento('entrega')">Pagar na entrega</button>
+      <button type="button" class="tab-btn" data-pagamento="pix" onclick="selecionarPagamento('pix')">PIX</button>
+    </div>
+    
+    <!-- Área do PIX: só aparece se selecionado -->
+    <div id="area-pix" style="display:none;align-items:center;gap:10px;margin-bottom:10px;">
+      <img src="https://logodownload.org/wp-content/uploads/2021/02/pix-icone-256.png" alt="PIX" style="height:40px;">
+      <input type="text" id="pix-chave" value="093.095.589-70" readonly style="width:170px;font-weight:bold;text-align:center;margin-right:8px;">
+      <button type="button" onclick="copiarPix()">Copiar</button>
+      <span id="pix-msg" style="color:green;display:none;">Copiado!</span>
+    </div>
     </div>
     <div id="bloco_pix" style="display: none; background-color: #fff0dc; padding: 15px; border-radius: 8px; border: 2px dashed #c69c6d; margin-bottom: 15px;">
       <img src="https://i.ibb.co/LzDZgw0F/DQzmf8-Z-Imgur.png" alt="QR Code PIX" style="width: 100%; max-width: 200px; display: block; margin: 0 auto;">
@@ -176,7 +183,6 @@
       </div>
     </div>
     <div>
-      <button id="instalar-pwa" style="margin-left:12px;">Adicionar à tela inicial</button>
       <button id="botao-enviar" onclick="enviarParaWhatsapp()">Enviar Pedido</button>
     </div>
     <div id="mensagem-feedback" class="feedback"></div>
