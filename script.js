@@ -1,36 +1,136 @@
-// PWA service worker (coloque o service worker em seu próprio arquivo se quiser mais recursos de cache)
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('service-worker.js');
-}
+// ========== INICIALIZAÇÃO ==========
+document.addEventListener('DOMContentLoaded', function() {
+  // Atualiza total ao digitar quantidade
+  const inputs = document.querySelectorAll('input[type="number"]');
+  inputs.forEach(input => input.addEventListener('input', calcularTotal));
 
-// ---- Tabs de produtos (docinhos/biscoitos/bebidas) ----
-function mostrarAba(nomeAba) {
-  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-  document.querySelector(`.tab-btn[onclick*="${nomeAba}"]`).classList.add('active');
-  document.getElementById(nomeAba).classList.add('active');
-}
+  // Tabs de recebimento
+  const tabBtns = document.querySelectorAll('.recebimento-btn');
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', function () {
+      tabBtns.forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      document.getElementById('recebimento').value = this.getAttribute('data-value');
+      mostrarEntrega(this.getAttribute('data-value') === 'entrega');
+    });
+  });
 
-// ---- Alterar quantidade ----
-function alterarQuantidade(id, delta) {
-  const input = document.getElementById(id);
-  let val = parseInt(input.value) || 0;
-  val = Math.max(0, val + delta);
-  input.value = val;
-  atualizarResumo();
-}
+  // Pagamento - inicialização padrão
+  selecionarPagamento('entrega');
 
-// ---- Tabs de recebimento ----
-document.querySelectorAll('.recebimento-btn').forEach(btn => {
-  btn.onclick = function() {
-    document.querySelectorAll('.recebimento-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('recebimento').value = btn.dataset.value;
-    document.getElementById('campos-entrega').style.display = (btn.dataset.value === 'entrega') ? 'block' : 'none';
-  };
+  // Banner "adicionar à tela inicial"
+  const banner = document.getElementById('add-to-home-banner');
+  if (banner) {
+    banner.onclick = function(e) {
+      if (e.target.id !== 'fechar-banner') instalarPWA();
+    };
+  }
+  const fechar = document.getElementById('fechar-banner');
+  if (fechar) {
+    fechar.onclick = function(event) {
+      event.stopPropagation();
+      banner.style.display = 'none';
+      localStorage.setItem('addToHomeDismissed', '1');
+    };
+  }
 });
 
-// ---- Tabs de pagamento ----
+// ========== TABS PRODUTOS ==========
+function mostrarAba(id) {
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelector(`.tab-btn[onclick="mostrarAba('${id}')"]`).classList.add('active');
+}
+
+// ========== RECEBIMENTO ==========
+function mostrarEntrega(exibir) {
+  document.getElementById("campos-entrega").style.display = exibir ? "block" : "none";
+}
+
+function preencherEnderecoSalvo() {
+  const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
+  if (!cpf) return;
+  const dados = localStorage.getItem('endereco_' + cpf);
+  if (dados) {
+    try {
+      const end = JSON.parse(dados);
+      document.getElementById('rua').value = end.rua || '';
+      document.getElementById('numero').value = end.numero || '';
+      document.getElementById('bairro').value = end.bairro || '';
+      document.getElementById('referencia').value = end.referencia || '';
+    } catch (e) {}
+  }
+}
+
+function salvarEnderecoPorCPF() {
+  const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
+  if (!cpf) return;
+  const endereco = {
+    rua: document.getElementById('rua').value,
+    numero: document.getElementById('numero').value,
+    bairro: document.getElementById('bairro').value,
+    referencia: document.getElementById('referencia').value
+  };
+  localStorage.setItem('endereco_' + cpf, JSON.stringify(endereco));
+}
+
+// ========== ALTERAR QUANTIDADE ==========
+function alterarQuantidade(id, delta) {
+  const input = document.getElementById(id);
+  let valorAtual = parseInt(input.value) || 0;
+  valorAtual = Math.max(0, valorAtual + delta);
+  input.value = valorAtual;
+  calcularTotal();
+}
+
+// ========== RESUMO E TOTAL ==========
+function calcularTotal() {
+  const brigadeiro = parseInt(document.getElementById('qtd_brigadeiro').value) || 0;
+  const beijinho = parseInt(document.getElementById('qtd_beijinho').value) || 0;
+  const doisAmores = parseInt(document.getElementById('qtd_dois_amores').value) || 0;
+  // Desabilitados para "em breve", mas mantém para estrutura futura
+  const biscAmantegado = parseInt(document.getElementById('qtd_biscoito')?.value) || 0;
+  const cafe = parseInt(document.getElementById('qtd_cafe')?.value) || 0;
+  const capuccino = parseInt(document.getElementById('qtd_capuccino')?.value) || 0;
+  const agua = parseInt(document.getElementById('qtd_agua')?.value) || 0;
+
+  const precoUnitario = 2;
+  const totalDoces = brigadeiro + beijinho + doisAmores;
+  const totalBiscoitos = biscAmantegado;
+  const totalBebidas = cafe + capuccino + agua;
+
+  let total = totalDoces * precoUnitario;
+  let embalagemExtra = 0;
+
+  // Embalagem extra se não for múltiplo de 6
+  const docesRestantes = totalDoces % 6;
+  if (docesRestantes > 0 && totalDoces > 0) {
+    total += 1;
+    embalagemExtra = 1;
+    document.getElementById("aviso_embalagem").style.display = 'block';
+    document.getElementById("aviso_embalagem").innerText = `Adicione mais ${6 - docesRestantes} docinhos para evitar a taxa de embalagem extra.`;
+  } else {
+    document.getElementById("aviso_embalagem").style.display = 'none';
+    document.getElementById("aviso_embalagem").innerText = '';
+  }
+
+  total += totalBiscoitos * precoUnitario;
+  total += totalBebidas * precoUnitario;
+
+  document.getElementById('linha_brigadeiro').innerText = brigadeiro > 0 ? `Brigadeiro | ${String(brigadeiro).padStart(2,'0')} | R$ ${(brigadeiro * precoUnitario).toFixed(2)}` : '';
+  document.getElementById('linha_beijinho').innerText = beijinho > 0 ? `Beijinho | ${String(beijinho).padStart(2,'0')} | R$ ${(beijinho * precoUnitario).toFixed(2)}` : '';
+  document.getElementById('linha_dois_amores').innerText = doisAmores > 0 ? `Dois Amores | ${String(doisAmores).padStart(2,'0')} | R$ ${(doisAmores * precoUnitario).toFixed(2)}` : '';
+  document.getElementById('linha_biscoito_amantegado').innerText = biscAmantegado > 0? `Biscoito Amantegado | ${String(biscAmantegado).padStart(2,'0')} | R$ ${(biscAmantegado * precoUnitario).toFixed(2)}` : '';
+  document.getElementById('linha_cafe').innerText = cafe > 0? `Café | ${String(cafe).padStart(2,'0')} | R$ ${(cafe * precoUnitario).toFixed(2)}` : '';
+  document.getElementById('linha_capuccino').innerText = capuccino > 0? `Capuccino | ${String(capuccino).padStart(2,'0')} | R$ ${(capuccino * precoUnitario).toFixed(2)}` : '';
+  document.getElementById('linha_agua').innerText = agua > 0? `Água | ${String(agua).padStart(2,'0')} | R$ ${(agua * precoUnitario).toFixed(2)}` : '';
+  document.getElementById('linha_embalagem').innerText = embalagemExtra > 0 ? `Embalagem extra R$ 1,00` : '';
+
+  document.getElementById('totalPedido').innerHTML = `<strong>Total: R$ ${total.toFixed(2)}</strong>`;
+}
+
+// ========== PAGAMENTO ==========
 function selecionarPagamento(tipo) {
   document.querySelectorAll('#tabs-pagamento .tab-btn').forEach(btn => {
     btn.classList.toggle('active', btn.getAttribute('data-pagamento') === tipo);
@@ -38,117 +138,171 @@ function selecionarPagamento(tipo) {
   document.getElementById('area-pix').style.display = (tipo === 'pix') ? 'flex' : 'none';
 }
 
-// ---- Copiar chave PIX ----
+// Copiar chave PIX (campo novo, sem QR, sem chave UUID)
 function copiarPix() {
   const input = document.getElementById('pix-chave');
   navigator.clipboard.writeText(input.value).then(() => {
     const msg = document.getElementById('pix-msg');
     msg.style.display = 'inline';
-    setTimeout(() => { msg.style.display = 'none'; }, 1500);
+    setTimeout(() => { msg.style.display = 'none'; }, 1800);
   });
 }
 
-// ---- Atualizar resumo e total ----
-function atualizarResumo() {
-  const preco = 2;
-  const qtd_brigadeiro = parseInt(document.getElementById('qtd_brigadeiro').value) || 0;
-  const qtd_beijinho = parseInt(document.getElementById('qtd_beijinho').value) || 0;
-  const qtd_dois_amores = parseInt(document.getElementById('qtd_dois_amores').value) || 0;
-
-  let total = (qtd_brigadeiro + qtd_beijinho + qtd_dois_amores) * preco;
-  let embalExtra = "";
-
-  document.getElementById('linha_brigadeiro').innerText = qtd_brigadeiro > 0 ? `Brigadeiro: ${qtd_brigadeiro} (R$ ${(qtd_brigadeiro*preco).toFixed(2).replace('.',',')})` : "";
-  document.getElementById('linha_beijinho').innerText = qtd_beijinho > 0 ? `Beijinho: ${qtd_beijinho} (R$ ${(qtd_beijinho*preco).toFixed(2).replace('.',',')})` : "";
-  document.getElementById('linha_dois_amores').innerText = qtd_dois_amores > 0 ? `Dois Amores: ${qtd_dois_amores} (R$ ${(qtd_dois_amores*preco).toFixed(2).replace('.',',')})` : "";
-
-  // Embalagem extra (opcional: se quiser regras diferentes, ajuste aqui)
-  if ((qtd_brigadeiro + qtd_beijinho + qtd_dois_amores) >= 10) {
-    embalExtra = "Embalagem extra: R$ 1,00";
-    total += 1;
+// ========== ENVIAR PEDIDO ==========
+function montarResumoPedido() {
+  const ids = [
+    { id: 'qtd_brigadeiro', nome: 'Brigadeiro' },
+    { id: 'qtd_beijinho', nome: 'Beijinho' },
+    { id: 'qtd_dois_amores', nome: 'Dois Amores' },
+    { id: 'qtd_biscoito', nome: 'Biscoito Amantegado' },
+    { id: 'qtd_cafe', nome: 'Café' },
+    { id: 'qtd_capuccino', nome: 'Capuccino' },
+    { id: 'qtd_agua', nome: 'Água' }
+  ];
+  const precoUnitario = 2;
+  let texto = '';
+  ids.forEach(({ id, nome }) => {
+    const qtd = parseInt(document.getElementById(id)?.value) || 0;
+    if (qtd > 0) {
+      texto += `${nome}: ${qtd} (R$ ${(qtd * precoUnitario).toFixed(2)}) | `;
+    }
+  });
+  if (document.getElementById('linha_embalagem').innerText) {
+    texto += 'Embalagem extra: R$ 1,00 | ';
   }
-  document.getElementById('linha_embalagem').innerText = embalExtra;
-
-  document.getElementById('totalPedido').innerHTML = `<strong>Total: R$ ${total.toFixed(2).replace('.',',')}</strong>`;
+  return texto;
 }
-['qtd_brigadeiro', 'qtd_beijinho', 'qtd_dois_amores'].forEach(id => {
-  document.getElementById(id).addEventListener('input', atualizarResumo);
-});
-atualizarResumo();
 
-// ---- Envio do pedido ----
 function enviarParaWhatsapp() {
-  const nome = document.getElementById('nome').value.trim();
-  if (!nome) { alert("Por favor, preencha seu nome."); return; }
-  const recebimento = document.getElementById('recebimento').value;
+  const nome = document.getElementById("nome").value.trim();
+  const total = document.getElementById("totalPedido").innerText;
   const pagamento = document.querySelector('#tabs-pagamento .tab-btn.active').dataset.pagamento;
+  const recebimento = document.getElementById('recebimento').value;
+  const feedback = document.getElementById('mensagem-feedback');
 
-  // Itens
-  const qtd_brigadeiro = parseInt(document.getElementById('qtd_brigadeiro').value) || 0;
-  const qtd_beijinho = parseInt(document.getElementById('qtd_beijinho').value) || 0;
-  const qtd_dois_amores = parseInt(document.getElementById('qtd_dois_amores').value) || 0;
-  let total = (qtd_brigadeiro + qtd_beijinho + qtd_dois_amores) * 2;
-  let texto_pedido = "";
-  if (qtd_brigadeiro) texto_pedido += `Brigadeiro: ${qtd_brigadeiro} (R$ ${(qtd_brigadeiro*2).toFixed(2).replace('.',',')})\n`;
-  if (qtd_beijinho) texto_pedido += `Beijinho: ${qtd_beijinho} (R$ ${(qtd_beijinho*2).toFixed(2).replace('.',',')})\n`;
-  if (qtd_dois_amores) texto_pedido += `Dois Amores: ${qtd_dois_amores} (R$ ${(qtd_dois_amores*2).toFixed(2).replace('.',',')})\n`;
-  // Embalagem extra
-  if ((qtd_brigadeiro + qtd_beijinho + qtd_dois_amores) >= 10) {
-    texto_pedido += `Embalagem extra: R$ 1,00\n`;
-    total += 1;
+  if (!nome) {
+    feedback.textContent = "Por favor, preencha o campo Nome.";
+    feedback.style.color = "red";
+    document.getElementById("nome").focus();
+    return;
   }
-  if (!texto_pedido) { alert("Selecione ao menos 1 docinho."); return; }
 
-  // Dados de entrega
-  let endereco = "";
+  // Validação dos doces
+  const pedidos = [
+    parseInt(document.getElementById('qtd_brigadeiro').value) || 0,
+    parseInt(document.getElementById('qtd_beijinho').value) || 0,
+    parseInt(document.getElementById('qtd_dois_amores').value) || 0
+  ];
+  const totalPedidos = pedidos.reduce((a, b) => a + b, 0);
+  if (totalPedidos === 0) {
+    feedback.textContent = "Adicione pelo menos 1 doce ao pedido!";
+    feedback.style.color = "red";
+    return;
+  }
+
+  // Se for entrega, validar endereço e cpf
+  let enderecoTexto = "";
   if (recebimento === "entrega") {
-    const cpf = document.getElementById('cpf').value.trim();
+    const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
     const rua = document.getElementById('rua').value.trim();
     const numero = document.getElementById('numero').value.trim();
     const bairro = document.getElementById('bairro').value.trim();
-    if (!cpf || !rua || !numero || !bairro) {
-      alert("Preencha todos os campos de entrega (CPF, rua, número, bairro).");
+    const referencia = document.getElementById('referencia').value.trim();
+    if (!cpf || cpf.length < 11) {
+      feedback.textContent = "Preencha um CPF válido para entrega.";
+      feedback.style.color = "red";
+      document.getElementById("cpf").focus();
       return;
     }
-    endereco = `CPF: ${cpf}\nRua: ${rua}, Nº: ${numero}\nBairro: ${bairro}`;
-    const referencia = document.getElementById('referencia').value.trim();
-    if (referencia) endereco += `\nReferência: ${referencia}`;
+    if (!rua || !numero || !bairro) {
+      feedback.textContent = "Preencha todos os campos de endereço para entrega.";
+      feedback.style.color = "red";
+      return;
+    }
+    salvarEnderecoPorCPF();
+    enderecoTexto = `\n\nEntrega para:\n${rua}, Nº ${numero}, ${bairro}\nReferência: ${referencia}\nCPF: ${cpf}`;
   }
 
-  // Resumo final do pedido
-  let msg = `*Pedido Dani Docinhos*\nNome: ${nome}\nRecebimento: ${recebimento}`;
-  if (endereco) msg += `\n${endereco}`;
-  msg += `\n\n${texto_pedido}Total: R$ ${total.toFixed(2).replace('.',',')}\nPagamento: ${pagamento}`;
-  if (pagamento === "pix") msg += `\nChave PIX: 093.095.589-70`;
+  feedback.textContent = "";
 
-  // Envio para Google Apps Script (ajuste sua URL)
-  fetch('SUA_URL_DO_APPS_SCRIPT_AQUI', {
+  // Monta mensagem
+  const ids = [
+    { id: 'qtd_brigadeiro', nome: 'Brigadeiro' },
+    { id: 'qtd_beijinho', nome: 'Beijinho' },
+    { id: 'qtd_dois_amores', nome: 'Dois Amores' },
+    { id: 'qtd_biscoito', nome: 'Biscoito Amantegado' },
+    { id: 'qtd_cafe', nome: 'Café' },
+    { id: 'qtd_capuccino', nome: 'Capuccino' },
+    { id: 'qtd_agua', nome: 'Água' }
+  ];
+  const precoUnitario = 2;
+  let mensagem = `Olá! Meu nome é ${nome} e gostaria de fazer o seguinte pedido:%0A%0A\u0060\u0060\u0060`;
+  ids.forEach(({ id, nome }) => {
+    const qtd = parseInt(document.getElementById(id)?.value) || 0;
+    if (qtd > 0) {
+      mensagem += `${nome.padEnd(12)}| ${String(qtd).padStart(2, '0')} | R$ ${(qtd * precoUnitario).toFixed(2)}%0A`;
+    }
+  });
+
+  if (document.getElementById('linha_embalagem').innerText) {
+    mensagem += `Embalagem   | 01 | R$ 1.00%0A`;
+  }
+
+  mensagem += `%0A\u0060\u0060\u0060${total}%0A%0AForma de Pagamento: ${pagamento}`;
+  mensagem += `%0A%0ARecebimento: ${recebimento === "entrega" ? "Entrega" : "Retirada"}`;
+  if (recebimento === "entrega") {
+    mensagem += `%0A${encodeURIComponent(enderecoTexto)}`;
+  }
+
+  if (pagamento === 'pix') {
+    mensagem += `%0AChave PIX: 093.095.589-70`;
+  }
+
+  // Objeto com os dados do pedido
+  const dadosPedido = {
+    nome,
+    recebimento,
+    cpf: recebimento === "entrega" ? document.getElementById('cpf').value : "",
+    rua: recebimento === "entrega" ? document.getElementById('rua').value : "",
+    numero: recebimento === "entrega" ? document.getElementById('numero').value : "",
+    bairro: recebimento === "entrega" ? document.getElementById('bairro').value : "",
+    referencia: recebimento === "entrega" ? document.getElementById('referencia').value : "",
+    pedido: montarResumoPedido(),
+    pagamento,
+    total
+  };
+
+  // Envia para Google Apps Script (ajuste sua URL abaixo)
+  fetch('https://script.google.com/macros/s/AKfycbwuJC5C5i0hDXxAEwmTJpgzklX8i6_svYo1GAEGvAy_UJm41l86K5iZVAXaf0jJTuYknA/exec', {
     method: 'POST',
     mode: 'no-cors',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      nome, recebimento, pagamento, pedido: texto_pedido.replace(/\n/g, ' | '), endereco, total: total.toFixed(2)
-    })
+    body: JSON.stringify(dadosPedido)
   });
 
-  // WhatsApp (ajuste seu número!)
-  const numeroZap = "SEU_NUMERO_WHATSAPP";
-  const urlZap = `https://wa.me/${numeroZap}?text=${encodeURIComponent(msg)}`;
-  window.open(urlZap, '_blank');
+  // Sugere adicionar à tela inicial
+  setTimeout(mostrarBannerAddHome, 1000);
 
-  // Sugestão para adicionar à tela inicial após enviar
-  setTimeout(mostrarBannerAddHome, 900);
+  // WhatsApp (ajuste seu número!)
+  const url = `https://wa.me/5542999589689?text=${mensagem}`;
+  window.open(url, '_blank');
+
+  feedback.textContent = "Pedido enviado com sucesso! Você será redirecionado para o WhatsApp.";
+  feedback.style.color = "green";
+  setTimeout(() => { feedback.textContent = ""; }, 4000);
 }
 
-// ---- Banner "adicionar à tela inicial" ----
+// ========== PWA / BANNER ADD TO HOME ==========
+function isInStandaloneMode() {
+  return (window.matchMedia('(display-mode: standalone)').matches) || (window.navigator.standalone);
+}
+
 let deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
 });
-function isInStandaloneMode() {
-  return (window.matchMedia('(display-mode: standalone)').matches) || (window.navigator.standalone);
-}
+
 function mostrarBannerAddHome() {
   if (isInStandaloneMode() || localStorage.getItem('addToHomeDismissed')) return;
   if (!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) return;
@@ -161,19 +315,19 @@ function mostrarBannerAddHome() {
   document.getElementById('add-to-home-instruction').innerHTML = texto;
   document.getElementById('add-to-home-banner').style.display = 'block';
 }
-// Clique no banner dispara o prompt de instalação (exceto botão fechar)
-document.getElementById('add-to-home-banner').onclick = function(e) {
-  if (e.target.id !== 'fechar-banner' && deferredPrompt) {
+
+function instalarPWA() {
+  if (deferredPrompt) {
     deferredPrompt.prompt();
-    deferredPrompt.userChoice.finally(() => {
+    deferredPrompt.userChoice.then(() => {
       deferredPrompt = null;
       document.getElementById('add-to-home-banner').style.display = 'none';
       localStorage.setItem('addToHomeDismissed', '1');
     });
   }
-};
-document.getElementById('fechar-banner').onclick = function(event) {
-  event.stopPropagation();
-  document.getElementById('add-to-home-banner').style.display = 'none';
-  localStorage.setItem('addToHomeDismissed', '1');
-};
+}
+
+// ========== SERVICE WORKER ==========
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js');
+}
