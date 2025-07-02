@@ -328,7 +328,7 @@ function instalarPWA() {
     });
   }
 }
- let deferredPrompt = null;
+ // let deferredPrompt = null;
 
 // Captura o evento PWA
 window.addEventListener('beforeinstallprompt', (e) => {
