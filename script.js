@@ -254,3 +254,16 @@ function calcularTotal() {
 
   document.getElementById('totalPedido').innerHTML = `<strong>Total: R$ ${total.toFixed(2)}</strong>`;
 }
+// Alerta "adicione à tela inicial"
+document.addEventListener('DOMContentLoaded', function() {
+  // Mostrar só em mobile e se ainda não fechou
+  if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) && !localStorage.getItem('addToHomeDismissed')) {
+    setTimeout(function() {
+      document.getElementById('add-to-home-banner').style.display = 'block';
+    }, 1200);
+  }
+  document.getElementById('fechar-banner').onclick = function() {
+    document.getElementById('add-to-home-banner').style.display = 'none';
+    localStorage.setItem('addToHomeDismissed', '1');
+  };
+});
