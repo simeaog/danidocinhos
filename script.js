@@ -217,8 +217,8 @@ function enviarParaWhatsapp() {
   const recebimento = document.getElementById('recebimento').value;
   const feedback = document.getElementById('mensagem-feedback');
   const entregaInfo = window.dataEntregaDocinhos || getNextDeliveryDate();
-...
-dadosPedido.forma_pagamento = getFormaPagamento();
+  dadosPedido.data_entrega = entregaInfo.dataEntregaISO;
+  
   if (!nome) {
     feedback.textContent = "Por favor, preencha o campo Nome.";
     feedback.style.color = "red";
@@ -239,7 +239,7 @@ dadosPedido.forma_pagamento = getFormaPagamento();
     return;
   }
 
-  dadosPedido.data_entrega = entregaInfo.dataEntregaISO;
+  dadosPedido.forma_pagamento = getFormaPagamento();
   
   // Se for entrega, validar endereço e cpf
   let enderecoTexto = "";
