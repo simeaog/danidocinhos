@@ -263,7 +263,7 @@ function enviarParaWhatsapp() {
       return;
     }
     salvarEnderecoPorCPF();
-    enderecoTexto = `\n\nEntrega para:\n${rua}, Nº ${numero}, ${bairro}\nReferência: ${referencia}\nCPF: ${cpf}`;
+    enderecoTexto = `\nEntrega para:\n${rua}, Nº ${numero}, ${bairro}\nReferência: ${referencia}\nCPF: ${cpf}`;
   }
 
   feedback.textContent = "";
@@ -295,9 +295,9 @@ function enviarParaWhatsapp() {
     mensagem += `%0A${encodeURIComponent(enderecoTexto)}`;
   }
   if (pagamento === 'pix' || pagamento === 'pix-pagamento-antecipado') {
-    mensagem += `%0AChave PIX: 093.095.589-70`;
+    mensagem += `%0A%0AChave PIX: 093.095.589-70`;
   }
-  mensagem += `%0AData de Entrega: ${entregaInfo.dataFormatada} (${entregaInfo.diaSemana})`;
+  mensagem += `%0A%0AData de Entrega: ${entregaInfo.dataFormatada} (${entregaInfo.diaSemana})`;
 
   // Monta objeto com os dados do pedido
   const dadosPedido = {
