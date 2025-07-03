@@ -373,72 +373,60 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('service-worker.js');
 }
 
-function getNextDeliveryDate(now = new Date()) {
-  // Horário de corte: meio-dia do dia anterior
-  const DAY_MS = 24 * 60 * 60 * 1000;
-  const wd = now.getDay(); // 0-dom, 1-seg, ..., 6-sab
-  const hour = now.getHours();
-  const minute = now.getMinutes();
-  const afterNoon = hour > 12 || (hour === 12 && minute > 0);
+// Retorna informações sobre a próxima entrega de acordo com a regra dos cortes
+function getEntregaInfo(now = new Date()) {
+  // Zera minutos e segundos
+  let data = new Date(now);
+  data.setSeconds(0,0);
 
-  // Helper para próxima data por dia da semana (0=domingo, 1=segunda,...)
-  function nextWeekdayDate(dow) {
-    const result = new Date(now);
-    const diff = (dow + 7 - wd) % 7 || 7; // always in future
-    result.setDate(now.getDate() + diff);
-    result.setHours(0,0,0,0);
-    return result;
-  }
+  // Dia da semana (0 = domingo, 4 = quinta)
+  let dow = data.getDay();
 
-  // Qual entrega está aberta?
-  // Pega último corte: quinta 12h e domingo 12h
-  // Pedidos para sexta: aceitos entre domingo 12h e quinta 12h
-  // Pedidos para segunda: aceitos entre quinta 12h e domingo 12h
-
-  let entrega, diaSemana;
-  let agora = new Date(now);
-
-  // Descobre o último corte (quinta 12h ou domingo 12h)
-  let quinta = nextWeekdayDate(4); // próxima quinta
+  // Última quinta às 12h
+  let quinta = new Date(data);
+  let diffQuinta = (dow >= 4) ? dow - 4 : dow + 3;
+  quinta.setDate(data.getDate() - diffQuinta);
   quinta.setHours(12,0,0,0);
-  let domingo = nextWeekdayDate(0); // próximo domingo
+
+  // Último domingo às 12h
+  let domingo = new Date(data);
+  domingo.setDate(data.getDate() - dow);
   domingo.setHours(12,0,0,0);
 
-  // Descobre qual janela estamos
-  let janelaParaSexta = false, janelaParaSegunda = false;
+  // Próxima sexta após domingo 12h
+  let proximaSexta = new Date(domingo);
+  proximaSexta.setDate(domingo.getDate() + 5);
+  proximaSexta.setHours(0,0,0,0);
 
-  // Para facilitar, calcula último quinta e último domingo
-  let ultimaQuinta = new Date(quinta); ultimaQuinta.setDate(quinta.getDate() - 7);
-  let ultimoDomingo = new Date(domingo); ultimoDomingo.setDate(domingo.getDate() - 7);
+  // Próxima segunda após quinta 12h
+  let proximaSegunda = new Date(quinta);
+  proximaSegunda.setDate(quinta.getDate() + 4);
+  proximaSegunda.setHours(0,0,0,0);
 
-  if (agora >= ultimoDomingo && agora < quinta) {
-    // domingo 12h até quinta 12h: pedidos para sexta
-    entrega = nextWeekdayDate(5); // próxima sexta
+  let entrega, diaSemana;
+  if (data >= domingo && data < quinta) {
+    // Entre domingo 12h e quinta 12h: pedidos para sexta
+    entrega = proximaSexta;
     diaSemana = 'sex';
-  } else if (agora >= quinta && agora < domingo) {
-    // quinta 12h até domingo 12h: pedidos para segunda
-    entrega = nextWeekdayDate(1); // próxima segunda
-    diaSemana = 'seg';
   } else {
-    // depois do domingo 12h (domingo à tarde até quinta 12h)
-    entrega = nextWeekdayDate(5); // próxima sexta
-    diaSemana = 'sex';
+    // Entre quinta 12h e domingo 12h: pedidos para segunda
+    entrega = proximaSegunda;
+    diaSemana = 'seg';
   }
 
-  // Formata data DD/MM
   let dd = entrega.getDate().toString().padStart(2,'0');
   let mm = (entrega.getMonth()+1).toString().padStart(2,'0');
   return {
     dataFormatada: `${dd}/${mm}`,
     diaSemana,
-    dataEntregaISO: entrega.toISOString().slice(0,10), // yyyy-mm-dd para sheets
+    dataEntregaISO: entrega.toISOString().slice(0,10),
     entregaDate: entrega
   };
 }
 
 // Troca título ao carregar
 function atualizarTituloEntrega() {
-  const entrega = getNextDeliveryDate();
+  const entrega = getEntregaInfo();
   const h2 = document.querySelector('h2');
   if (h2) {
     h2.textContent = `Monte seu pedido para ${entrega.dataFormatada} (${entrega.diaSemana})`;
