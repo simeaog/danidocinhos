@@ -161,12 +161,29 @@
     <div class="aviso-embalagem" id="aviso_embalagem"></div>
     <div class="form-group">
     <label><strong>Forma de Pagamento:</strong></label>
-    <div id="tabs-pagamento" style="display:flex;gap:10px;margin-bottom:10px;">
-      <button type="button" class="tab-btn active" data-pagamento="entrega" onclick="selecionarPagamento('entrega')">Pagar na entrega</button>
-      <button type="button" class="tab-btn" data-pagamento="pix" onclick="selecionarPagamento('pix')">PIX</button>
+      
+    <div id="abas-pagamento" class="tabs">
+      <button type="button" class="tab-btn active" data-aba="entrega" onclick="mostrarAbaPagamento('entrega')">Pagar na entrega</button>
+      <button type="button" class="tab-btn" data-aba="agora" onclick="mostrarAbaPagamento('agora')">Pagar agora</button>
     </div>
     
-    <!-- Área do PIX: só aparece se selecionado -->
+    <div id="pagamento-entrega" style="display:block; margin-bottom:10px;">
+      <label><input type="radio" name="pagamento_entrega" value="pix" checked> PIX</label>
+      <label><input type="radio" name="pagamento_entrega" value="dinheiro"> Dinheiro</label>
+    </div>
+    <div id="pagamento-agora" style="display:none; margin-bottom:10px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <img src="https://i.ibb.co/yBmmvBZm/VYPSegd-Imgur.png" alt="PIX" style="height:40px;">
+        <input type="text" id="pix-chave" value="093.095.589-70" readonly style="width:170px;font-weight:bold;text-align:center;margin-right:8px;">
+        <button type="button" onclick="copiarPix()">Copiar</button>
+        <span id="pix-msg" style="color:green;display:none;">Copiado!</span>
+      </div>
+      <div style="font-size:13px; color:#a16b00; margin-top:4px;">
+        <b>Importante:</b> Confirmar o pedido apenas após o envio do comprovante via WhatsApp.
+      </div>
+    </div>
+    
+    <!-- Área do PIX: só aparece se selecionado 
     <div id="area-pix" style="display:none;align-items:center;gap:10px;margin-bottom:10px;">
       <img src="https://i.ibb.co/yBmmvBZm/VYPSegd-Imgur.png" alt="PIX" style="height:40px;">
       <input type="text" id="pix-chave" value="093.095.589-70" readonly style="width:170px;font-weight:bold;text-align:center;margin-right:8px;">
@@ -181,7 +198,8 @@
         <strong id="chave_pix">ce48e2ee-ef1d-4d4f-854d-ead711cdade3</strong>
         <img src="https://i.ibb.co/VYr08G3S/WPru-QK0-Imgur.png" alt="Copiar" onclick="copiarChavePix()">
       </div>
-    </div>
+    </div>-->
+      
     <div>
       <button id="botao-enviar" onclick="enviarParaWhatsapp()">Enviar Pedido</button>
     </div>
