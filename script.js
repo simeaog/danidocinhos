@@ -3,6 +3,9 @@ let deferredPrompt = null;
 
 // ========== INICIALIZAÇÃO ==========
 document.addEventListener('DOMContentLoaded', function() {
+
+  atualizarTituloEntrega();
+  
   // Atualiza total ao digitar quantidade
   document.querySelectorAll('input[type="number"]').forEach(input =>
     input.addEventListener('input', calcularTotal)
@@ -144,11 +147,27 @@ function calcularTotal() {
 }
 
 // ========== PIX ==========
+function mostrarAbaPagamento(tipo) {
+  document.querySelectorAll('#abas-pagamento .tab-btn').forEach(btn =>
+    btn.classList.toggle('active', btn.getAttribute('data-aba') === tipo)
+  );
+  document.getElementById('pagamento-entrega').style.display = (tipo === 'entrega') ? 'block' : 'none';
+  document.getElementById('pagamento-agora').style.display = (tipo === 'agora') ? 'block' : 'none';
+}
+
 function selecionarPagamento(tipo) {
   document.querySelectorAll('#tabs-pagamento .tab-btn').forEach(btn => {
     btn.classList.toggle('active', btn.getAttribute('data-pagamento') === tipo);
   });
   document.getElementById('area-pix').style.display = (tipo === 'pix') ? 'flex' : 'none';
+}
+
+function getFormaPagamento() {
+  if(document.querySelector('#abas-pagamento .tab-btn.active').getAttribute('data-aba') === "entrega") {
+    return document.querySelector('input[name="pagamento_entrega"]:checked').value;
+  } else {
+    return "pix-pagamento-antecipado";
+  }
 }
 
 function copiarPix() {
@@ -197,7 +216,9 @@ function enviarParaWhatsapp() {
   const pagamento = document.querySelector('#tabs-pagamento .tab-btn.active').dataset.pagamento;
   const recebimento = document.getElementById('recebimento').value;
   const feedback = document.getElementById('mensagem-feedback');
-
+  const entregaInfo = window.dataEntregaDocinhos || getNextDeliveryDate();
+...
+dadosPedido.forma_pagamento = getFormaPagamento();
   if (!nome) {
     feedback.textContent = "Por favor, preencha o campo Nome.";
     feedback.style.color = "red";
@@ -218,6 +239,8 @@ function enviarParaWhatsapp() {
     return;
   }
 
+  dadosPedido.data_entrega = entregaInfo.dataEntregaISO;
+  
   // Se for entrega, validar endereço e cpf
   let enderecoTexto = "";
   if (recebimento === "entrega") {
@@ -344,4 +367,78 @@ function instalarPWA() {
 // ========== SERVICE WORKER ==========
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('service-worker.js');
+}
+
+function getNextDeliveryDate(now = new Date()) {
+  // Horário de corte: meio-dia do dia anterior
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const wd = now.getDay(); // 0-dom, 1-seg, ..., 6-sab
+  const hour = now.getHours();
+  const minute = now.getMinutes();
+  const afterNoon = hour > 12 || (hour === 12 && minute > 0);
+
+  // Helper para próxima data por dia da semana (0=domingo, 1=segunda,...)
+  function nextWeekdayDate(dow) {
+    const result = new Date(now);
+    const diff = (dow + 7 - wd) % 7 || 7; // always in future
+    result.setDate(now.getDate() + diff);
+    result.setHours(0,0,0,0);
+    return result;
+  }
+
+  // Qual entrega está aberta?
+  // Pega último corte: quinta 12h e domingo 12h
+  // Pedidos para sexta: aceitos entre domingo 12h e quinta 12h
+  // Pedidos para segunda: aceitos entre quinta 12h e domingo 12h
+
+  let entrega, diaSemana;
+  let agora = new Date(now);
+
+  // Descobre o último corte (quinta 12h ou domingo 12h)
+  let quinta = nextWeekdayDate(4); // próxima quinta
+  quinta.setHours(12,0,0,0);
+  let domingo = nextWeekdayDate(0); // próximo domingo
+  domingo.setHours(12,0,0,0);
+
+  // Descobre qual janela estamos
+  let janelaParaSexta = false, janelaParaSegunda = false;
+
+  // Para facilitar, calcula último quinta e último domingo
+  let ultimaQuinta = new Date(quinta); ultimaQuinta.setDate(quinta.getDate() - 7);
+  let ultimoDomingo = new Date(domingo); ultimoDomingo.setDate(domingo.getDate() - 7);
+
+  if (agora >= ultimoDomingo && agora < quinta) {
+    // domingo 12h até quinta 12h: pedidos para sexta
+    entrega = nextWeekdayDate(5); // próxima sexta
+    diaSemana = 'sex';
+  } else if (agora >= quinta && agora < domingo) {
+    // quinta 12h até domingo 12h: pedidos para segunda
+    entrega = nextWeekdayDate(1); // próxima segunda
+    diaSemana = 'seg';
+  } else {
+    // depois do domingo 12h (domingo à tarde até quinta 12h)
+    entrega = nextWeekdayDate(5); // próxima sexta
+    diaSemana = 'sex';
+  }
+
+  // Formata data DD/MM
+  let dd = entrega.getDate().toString().padStart(2,'0');
+  let mm = (entrega.getMonth()+1).toString().padStart(2,'0');
+  return {
+    dataFormatada: `${dd}/${mm}`,
+    diaSemana,
+    dataEntregaISO: entrega.toISOString().slice(0,10), // yyyy-mm-dd para sheets
+    entregaDate: entrega
+  };
+}
+
+// Troca título ao carregar
+function atualizarTituloEntrega() {
+  const entrega = getNextDeliveryDate();
+  const h2 = document.querySelector('h2');
+  if (h2) {
+    h2.textContent = `Monte seu pedido para ${entrega.dataFormatada} (${entrega.diaSemana})`;
+  }
+  // Guarda para uso no envio do pedido
+  window.dataEntregaDocinhos = entrega;
 }
