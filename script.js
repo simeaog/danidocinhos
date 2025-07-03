@@ -211,14 +211,17 @@ function montarResumoPedido() {
 }
 
 function enviarParaWhatsapp() {
+  // Dados básicos
   const nome = document.getElementById("nome").value.trim();
   const total = document.getElementById("totalPedido").innerText;
-  const pagamento = document.querySelector('#tabs-pagamento .tab-btn.active').dataset.pagamento;
   const recebimento = document.getElementById('recebimento').value;
   const feedback = document.getElementById('mensagem-feedback');
   const entregaInfo = window.dataEntregaDocinhos || getNextDeliveryDate();
-  dadosPedido.data_entrega = entregaInfo.dataEntregaISO;
-  
+
+  // Determinar forma de pagamento
+  let pagamento = getFormaPagamento();
+
+  // Validação do nome
   if (!nome) {
     feedback.textContent = "Por favor, preencha o campo Nome.";
     feedback.style.color = "red";
@@ -239,16 +242,15 @@ function enviarParaWhatsapp() {
     return;
   }
 
-  dadosPedido.forma_pagamento = getFormaPagamento();
-  
-  // Se for entrega, validar endereço e cpf
+  // Validação de entrega (se necessário)
   let enderecoTexto = "";
+  let cpf = "", rua = "", numero = "", bairro = "", referencia = "";
   if (recebimento === "entrega") {
-    const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
-    const rua = document.getElementById('rua').value.trim();
-    const numero = document.getElementById('numero').value.trim();
-    const bairro = document.getElementById('bairro').value.trim();
-    const referencia = document.getElementById('referencia').value.trim();
+    cpf = document.getElementById('cpf').value.replace(/\D/g, '');
+    rua = document.getElementById('rua').value.trim();
+    numero = document.getElementById('numero').value.trim();
+    bairro = document.getElementById('bairro').value.trim();
+    referencia = document.getElementById('referencia').value.trim();
     if (!cpf || cpf.length < 11) {
       feedback.textContent = "Preencha um CPF válido para entrega.";
       feedback.style.color = "red";
@@ -292,22 +294,24 @@ function enviarParaWhatsapp() {
   if (recebimento === "entrega") {
     mensagem += `%0A${encodeURIComponent(enderecoTexto)}`;
   }
-  if (pagamento === 'pix') {
+  if (pagamento === 'pix' || pagamento === 'pix-pagamento-antecipado') {
     mensagem += `%0AChave PIX: 093.095.589-70`;
   }
+  mensagem += `%0AData de Entrega: ${entregaInfo.dataFormatada} (${entregaInfo.diaSemana})`;
 
   // Monta objeto com os dados do pedido
   const dadosPedido = {
     nome,
     recebimento,
-    cpf: recebimento === "entrega" ? document.getElementById('cpf').value : "",
-    rua: recebimento === "entrega" ? document.getElementById('rua').value : "",
-    numero: recebimento === "entrega" ? document.getElementById('numero').value : "",
-    bairro: recebimento === "entrega" ? document.getElementById('bairro').value : "",
-    referencia: recebimento === "entrega" ? document.getElementById('referencia').value : "",
+    cpf,
+    rua,
+    numero,
+    bairro,
+    referencia,
     pedido: montarResumoPedido(),
     pagamento,
-    total
+    total,
+    data_entrega: entregaInfo.dataEntregaISO
   };
 
   // Envia para Google Apps Script (ajuste a URL abaixo)
