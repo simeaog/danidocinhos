@@ -2,9 +2,8 @@
 let deferredPrompt = null;
 
 // ========== INICIALIZAÇÃO ==========
+window.addEventListener('DOMContentLoaded', atualizarTituloEntrega);
 document.addEventListener('DOMContentLoaded', function() {
-
-  atualizarTituloEntrega();
   
   // Atualiza total ao digitar quantidade
   document.querySelectorAll('input[type="number"]').forEach(input =>
