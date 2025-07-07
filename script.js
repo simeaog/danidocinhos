@@ -2,8 +2,16 @@
 let deferredPrompt = null;
 
 // ========== INICIALIZAÇÃO ==========
-window.addEventListener('DOMContentLoaded', atualizarTituloEntrega);
 document.addEventListener('DOMContentLoaded', function() {
+
+  // Atualiza a data de entrega dinâmica
+  const info = getEntregaInfo();
+  const dias = {sex: "sexta", seg: "segunda"};
+  const entregaSpan = document.getElementById('data-entrega');
+  if (entregaSpan) {
+    entregaSpan.textContent = `${dias[info.diaSemana]}, ${info.dataFormatada}`;
+  }
+
   
   // Atualiza total ao digitar quantidade
   document.querySelectorAll('input[type="number"]').forEach(input =>
