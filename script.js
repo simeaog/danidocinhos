@@ -3,8 +3,6 @@ let deferredPrompt = null;
 
 // ========== INICIALIZAÇÃO ==========
 document.addEventListener('DOMContentLoaded', function() {
-  
-  // Atualiza total ao digitar quantidade
   document.querySelectorAll('input[type="number"]').forEach(input =>
     input.addEventListener('input', calcularTotal)
   );
@@ -21,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   // Tabs de pagamento (inicia como "entrega")
-  selecionarPagamento('entrega');
+  mostrarAbaPagamento('entrega');
 
   // Banner "adicionar à tela inicial"
   const banner = document.getElementById('add-to-home-banner');
@@ -39,24 +37,13 @@ document.addEventListener('DOMContentLoaded', function() {
     };
   }
 
-  // Exibe o banner se for mobile e ainda não foi fechado
   if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) && !localStorage.getItem('addToHomeDismissed')) {
     setTimeout(function() {
       if (banner) banner.style.display = 'block';
     }, 1200);
   }
 
-  // Inicializa resumo e total
   calcularTotal();
-
-  // Atualiza a data de entrega dinâmica
-  //const info = getEntregaInfo();
-  //const dias = {sex: "sex", seg: "seg"};
-  //const entregaSpan = document.getElementById('data-entrega');
-  //if (entregaSpan) {
-  //  entregaSpan.textContent = `${dias[info.diaSemana]}, ${info.dataFormatada}`;
- // }
-  
 });
 
 // ========== TABS PRODUTOS ==========
@@ -153,7 +140,7 @@ function calcularTotal() {
   document.getElementById('totalPedido').innerHTML = `<strong>Total: R$ ${total.toFixed(2)}</strong>`;
 }
 
-// ========== PIX ==========
+// ========== PAGAMENTO ==========
 function mostrarAbaPagamento(tipo) {
   document.querySelectorAll('#abas-pagamento .tab-btn').forEach(btn =>
     btn.classList.toggle('active', btn.getAttribute('data-aba') === tipo)
@@ -162,16 +149,15 @@ function mostrarAbaPagamento(tipo) {
   document.getElementById('pagamento-agora').style.display = (tipo === 'agora') ? 'block' : 'none';
 }
 
-function selecionarPagamento(tipo) {
-  document.querySelectorAll('#tabs-pagamento .tab-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.getAttribute('data-pagamento') === tipo);
-  });
-  document.getElementById('area-pix').style.display = (tipo === 'pix') ? 'flex' : 'none';
-}
-
+// Função robusta e segura
 function getFormaPagamento() {
-  if(document.querySelector('#abas-pagamento .tab-btn.active').getAttribute('data-aba') === "entrega") {
-    return document.querySelector('input[name="pagamento_entrega"]:checked').value;
+  // Verifica aba ativa
+  let aba = document.querySelector('#abas-pagamento .tab-btn.active');
+  if (!aba) return "pix";
+  if (aba.getAttribute('data-aba') === "entrega") {
+    let radio = document.querySelector('input[name="pagamento_entrega"]:checked');
+    // Garante valor default se nada selecionado
+    return radio ? radio.value : "pix";
   } else {
     return "pix-pagamento-antecipado";
   }
@@ -185,7 +171,6 @@ function copiarPix() {
     setTimeout(() => { msg.style.display = 'none'; }, 1800);
   });
 }
-
 // Caso clique no bloco antigo de QR code pix, só copia a chave (compatibilidade)
 function copiarChavePix() {
   const chave = document.getElementById("chave_pix").innerText;
@@ -218,14 +203,10 @@ function montarResumoPedido() {
 }
 
 function enviarParaWhatsapp() {
-  // Dados básicos
   const nome = document.getElementById("nome").value.trim();
   const total = document.getElementById("totalPedido").innerText;
   const recebimento = document.getElementById('recebimento').value;
   const feedback = document.getElementById('mensagem-feedback');
-  //const entregaInfo = window.dataEntregaDocinhos || getNextDeliveryDate();
-
-  // Determinar forma de pagamento
   let pagamento = getFormaPagamento();
 
   // Validação do nome
@@ -304,7 +285,6 @@ function enviarParaWhatsapp() {
   if (pagamento === 'pix' || pagamento === 'pix-pagamento-antecipado') {
     mensagem += `%0A%0AChave PIX: 093.095.589-70`;
   }
-  //mensagem += `%0A%0AData de Entrega: ${entregaInfo.dataFormatada} (${entregaInfo.diaSemana})`;
 
   // Monta objeto com os dados do pedido
   const dadosPedido = {
@@ -317,8 +297,7 @@ function enviarParaWhatsapp() {
     referencia,
     pedido: montarResumoPedido(),
     pagamento,
-    total,
-    //data_entrega: entregaInfo.dataEntregaISO
+    total
   };
 
   // Envia para Google Apps Script (ajuste a URL abaixo)
@@ -329,7 +308,6 @@ function enviarParaWhatsapp() {
     body: JSON.stringify(dadosPedido)
   });
 
-  // Sugere adicionar à tela inicial
   setTimeout(mostrarBannerAddHome, 1000);
 
   // WhatsApp (ajuste seu número!)
@@ -378,66 +356,4 @@ function instalarPWA() {
 // ========== SERVICE WORKER ==========
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('service-worker.js');
-}
-
-// Retorna informações sobre a próxima entrega de acordo com a regra dos cortes
-function getEntregaInfo(now = new Date()) {
-  // Zera minutos e segundos
-  let data = new Date(now);
-  data.setSeconds(0,0);
-
-  // Dia da semana (0 = domingo, 4 = quinta)
-  let dow = data.getDay();
-
-  // Última quinta às 12h
-  let quinta = new Date(data);
-  let diffQuinta = (dow >= 4) ? dow - 4 : dow + 3;
-  quinta.setDate(data.getDate() - diffQuinta);
-  quinta.setHours(12,0,0,0);
-
-  // Último domingo às 12h
-  let domingo = new Date(data);
-  domingo.setDate(data.getDate() - dow);
-  domingo.setHours(12,0,0,0);
-
-  // Próxima sexta após domingo 12h
-  let proximaSexta = new Date(domingo);
-  proximaSexta.setDate(domingo.getDate() + 5);
-  proximaSexta.setHours(0,0,0,0);
-
-  // Próxima segunda após quinta 12h
-  let proximaSegunda = new Date(quinta);
-  proximaSegunda.setDate(quinta.getDate() + 4);
-  proximaSegunda.setHours(0,0,0,0);
-
-  let entrega, diaSemana;
-  if (data >= domingo && data < quinta) {
-    // Entre domingo 12h e quinta 12h: pedidos para sexta
-    entrega = proximaSexta;
-    diaSemana = 'sex';
-  } else {
-    // Entre quinta 12h e domingo 12h: pedidos para segunda
-    entrega = proximaSegunda;
-    diaSemana = 'seg';
-  }
-
-  let dd = entrega.getDate().toString().padStart(2,'0');
-  let mm = (entrega.getMonth()+1).toString().padStart(2,'0');
-  return {
-    dataFormatada: `${dd}/${mm}`,
-    diaSemana,
-    dataEntregaISO: entrega.toISOString().slice(0,10),
-    entregaDate: entrega
-  };
-}
-
-// Troca título ao carregar
-function atualizarTituloEntrega() {
-  const entrega = getEntregaInfo();
-  const h2 = document.querySelector('h2');
-  if (h2) {
-    h2.textContent = `Monte seu pedido para ${entrega.dataFormatada} (${entrega.diaSemana})`;
-  }
-  // Guarda para uso no envio do pedido
-  window.dataEntregaDocinhos = entrega;
 }
