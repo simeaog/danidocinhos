@@ -304,7 +304,7 @@ function enviarParaWhatsapp() {
   if (pagamento === 'pix' || pagamento === 'pix-pagamento-antecipado') {
     mensagem += `%0A%0AChave PIX: 093.095.589-70`;
   }
-  mensagem += `%0A%0AData de Entrega: ${entregaInfo.dataFormatada} (${entregaInfo.diaSemana})`;
+  //mensagem += `%0A%0AData de Entrega: ${entregaInfo.dataFormatada} (${entregaInfo.diaSemana})`;
 
   // Monta objeto com os dados do pedido
   const dadosPedido = {
