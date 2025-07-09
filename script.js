@@ -50,12 +50,12 @@ document.addEventListener('DOMContentLoaded', function() {
   calcularTotal();
 
   // Atualiza a data de entrega dinâmica
-  const info = getEntregaInfo();
-  const dias = {sex: "sex", seg: "seg"};
-  const entregaSpan = document.getElementById('data-entrega');
-  if (entregaSpan) {
-    entregaSpan.textContent = `${dias[info.diaSemana]}, ${info.dataFormatada}`;
-  }
+  //const info = getEntregaInfo();
+  //const dias = {sex: "sex", seg: "seg"};
+  //const entregaSpan = document.getElementById('data-entrega');
+  //if (entregaSpan) {
+  //  entregaSpan.textContent = `${dias[info.diaSemana]}, ${info.dataFormatada}`;
+ // }
   
 });
 
@@ -223,7 +223,7 @@ function enviarParaWhatsapp() {
   const total = document.getElementById("totalPedido").innerText;
   const recebimento = document.getElementById('recebimento').value;
   const feedback = document.getElementById('mensagem-feedback');
-  const entregaInfo = window.dataEntregaDocinhos || getNextDeliveryDate();
+  //const entregaInfo = window.dataEntregaDocinhos || getNextDeliveryDate();
 
   // Determinar forma de pagamento
   let pagamento = getFormaPagamento();
@@ -318,7 +318,7 @@ function enviarParaWhatsapp() {
     pedido: montarResumoPedido(),
     pagamento,
     total,
-    data_entrega: entregaInfo.dataEntregaISO
+    //data_entrega: entregaInfo.dataEntregaISO
   };
 
   // Envia para Google Apps Script (ajuste a URL abaixo)
